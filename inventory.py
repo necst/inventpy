@@ -9,6 +9,7 @@ import tarfile
 import argparse
 import logging
 import lxml.etree
+import simplejson
 
 from IPython import embed
 
@@ -68,6 +69,14 @@ class Inventory(object):
         self._run()
         self._txt_summary()
         self._print_summary()
+        self._print()
+
+    def sizeof_fmt(self, num):
+        for x in ['bytes','KB','MB','GB']:
+            if num < 1024.0 and num > -1024.0:
+                return "%3.1f%s" % (num, x)
+            num /= 1024.0
+        return "%3.1f%s" % (num, 'TB')
 
     def _print_summary(self):
         print self.summary_txt
@@ -82,7 +91,7 @@ class Inventory(object):
 
 
     def _print(self):
-        pprint.pprint(self.info)
+        pprint.pprint(simplejson.dumps(self.info))
 
     def _run(self):
         for f in self.args.archives:
@@ -102,17 +111,18 @@ class Inventory(object):
                                          bn,
                                          self.current)
                             m(tf.extractfile(ti).read())
-                            self._summarize()
                         else:
                             logging.warning('Not calling %s', bn)
+            self._summarize()
 
     def _summarize(self):
+        logging.info('Summarizing %s' % self.current)
         self.summary[self.current] = {
             'chassis_sn': self.info[self.current]['chassis_sn'],
             'vendor': self.info[self.current]['hw']['vendor'],
             'product': self.info[self.current]['hw']['product'],
             'uuid': self.info[self.current]['uuid'],
-            'total_ram': self.info[self.current]['hw']['RAM total size'],
+            'total_ram': self.sizeof_fmt(float(self.info[self.current]['hw']['RAM total size'])),
             'ram_slots': self.info[self.current]['hw']['RAM slots'],
             'ram_empty_slots': self.info[self.current]['hw']['RAM empty'],
             'nics': self.info[self.current]['hw']['NICs'],
@@ -184,7 +194,7 @@ class Inventory(object):
             #"socket": "",
             "RAM total size":  'node//node[@id="memory"]/size/text()',
             "RAM type": 'node//node[@class="memory"]/node[contains(@id,"bank")]/description/text()',
-            "RAM bank size": '/node//node[@class="memory"]/node[contains(@id,"bank")]/size/text()',
+            "RAM bank size": 'node//node[@class="memory"]/node[contains(@id,"bank")]/size/text()',
             #"USB port number": "",
             #"USB version": "",
             #"chipset": "",
