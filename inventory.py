@@ -91,7 +91,7 @@ class Inventory(object):
 
 
     def _print(self):
-        pprint.pprint(simplejson.dumps(self.info))
+        pprint.pprint(self.info)
 
     def _run(self):
         for f in self.args.archives:
