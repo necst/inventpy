@@ -218,7 +218,11 @@ class Inventory(object):
 
             self.info[self.current]['hw'][k] = vv
 
-        self.info[self.current]['hw']['NICs'] = len(self.info[self.current]['hw']['NIC models'])
+        nics = self.info[self.current]['hw']['NIC models']
+        if not isinstance(nics, list):
+            nics = [nics]
+
+        self.info[self.current]['hw']['NICs'] = len(nics)
         self.info[self.current]['hw']['RAM slots'] = len(self.info[self.current]['hw']['RAM type'])
         self.info[self.current]['hw']['RAM empty'] = len(self.info[self.current]['hw']['RAM type']) - \
             len(self.info[self.current]['hw']['RAM bank size'])
